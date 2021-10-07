@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+    <title>Bezier Curves - Tom Bradley</title>
+    <meta name="description" content="A simple simulation that shows how bezier curves are drawn.">
+    <style>
+        body {
+            color: #111;
+            background-color: #efefef;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            font-size: 16px;
+        }
+    </style>
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+    <link rel="manifest" href="site.webmanifest">
+</head>
+
+<body>
+    <h1>Bezier Curves</h1>
+    <p>A simple simulation that shows how bezier curves are drawn.</p>
+    <canvas id="canvas" width="600px" height="600px"></canvas>
+    <script>
+        const canvas = document.getElementById("canvas");
+        const canvasContext = canvas.getContext("2d");
+
+        drawBezier({ x: 40, y: 110 }, { x: 380, y: 130 }, { x: 460, y: 440 });
+
+        function drawBezier(point1, point2, point3) {
+            const iterationMax = 300;
+            let i = 0;
+            let curvePoints = [];
+            let interval = setInterval(function () {
+                drawCanvas();
+
+                drawLine(point1, point2, "#0f0");
+                drawLine(point2, point3, "#0f0");
+
+                drawPoint(point1, "#f00");
+                drawPoint(point2, "#f00");
+                drawPoint(point3, "#f00");
+
+                const gradient = (point2.y - point1.y) / (point2.x - point1.x);
+                let midpoint12 = { x: point1.x + ((point2.x - point1.x) * i / iterationMax), y: point1.y - (i / iterationMax * (point1.y - point2.y)) };
+                let midpoint23 = { x: point2.x + ((point3.x - point2.x) * i / iterationMax), y: point2.y - (i / iterationMax * (point2.y - point3.y)) };
+
+                let midpoint123 = { x: midpoint12.x + ((midpoint23.x - midpoint12.x) * i / iterationMax), y: midpoint12.y - (i / iterationMax * (midpoint12.y - midpoint23.y)) };
+                curvePoints.push(midpoint123);
+
+
+                drawLine(midpoint12, midpoint23, "#f9f");
+
+                curvePoints.forEach(function (point) {
+                    drawPoint(point, "#ff0");
+                });
+                drawPoint(midpoint123, "#f00", ("#f00", Math.round(i / iterationMax * 100) / 100));
+
+                drawPoint(midpoint12, "#f00", ("#f00", Math.round(i / iterationMax * 100) / 100));
+                drawPoint(midpoint23, "#f00", ("#f00", Math.round(i / iterationMax * 100) / 100));
+
+                if (i >= iterationMax) clearInterval(interval);
+                i++;
+            }, 20);
+        }
+
+        function drawPoint(point, colour, label) {
+            canvasContext.fillStyle = colour;
+            canvasContext.fillRect(point.x, point.y, 4, 4);
+            if (!(typeof label === 'undefined')) {
+                canvasContext.font = 'bold 16px sans-serif';
+                canvasContext.fillText(label, point.x, point.y);
+            }
+        }
+
+        function drawLine(point1, point2, colour) {
+            canvasContext.fillStyle = colour;
+            const gradient = (point2.y - point1.y) / (point2.x - point1.x);
+
+            if (point1.x < point2.x) {
+                for (let i = point1.x; i < point2.x; i++) {
+                    canvasContext.fillRect(i, point1.y + (gradient * (i - point1.x)), 4, 4);
+                }
+            } else {
+                for (let i = point1.x; i > point2.x; i--) {
+                    canvasContext.fillRect(i, point1.y + (gradient * (i - point1.x)), 4, 4);
+                }
+            }
+        }
+
+        function drawCanvas() {
+            canvasContext.fillStyle = "#fff";
+            canvasContext.fillRect(0, 0, canvas.width, canvas.height);
+        }
+    </script>
+</body>
+
+</html>
